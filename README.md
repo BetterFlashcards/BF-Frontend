@@ -1,9 +1,12 @@
 # BF-Frontend
 
 ## How to run
+
 **Install dependencies**
-- npm install
+- `npm install`
+
 **Go to correct folder**
-- cd flashcard-app
+- `cd flashcard-app`
+
 **Run the application**
-- npm start
+- `npm start`
