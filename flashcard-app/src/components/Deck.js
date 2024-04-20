@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Flashcard from './Flashcard';
 import './Deck.css'; // Import the CSS file
 
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) {
+    return "__/__/____";
+  }
+  return date.toLocaleString();
+}
+
 function Deck({ deck, addCardToDeck, deleteDeck, updateDeckTitle, deleteCard, updateCard }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
@@ -43,6 +51,7 @@ function Deck({ deck, addCardToDeck, deleteDeck, updateDeckTitle, deleteCard, up
   return (
     <div className="deck-container">
       <h2>{deck.title} - Cards: {deck.cards.length}<button onClick={handleUpdateDeckTitle}>Edit</button> <button onClick={handleDeleteDeck}>Delete</button></h2>
+      <p>Last Updated: {formatDate(deck.lastUpdated)}</p>
       <div>
         <input
           type="text"

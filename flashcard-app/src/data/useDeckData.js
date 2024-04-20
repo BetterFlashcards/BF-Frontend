@@ -5,7 +5,7 @@ function useDeckData() {
   const [decks, setDecks] = useState([]);
 
   const addDeck = (title) => {
-    const newDeck = { id: uuidv4(), title, cards: [] };
+    const newDeck = { id: uuidv4(), title, cards: [], lastUpdated: new Date().toISOString() };
     setDecks([...decks, newDeck]);
   };
 
@@ -14,7 +14,12 @@ function useDeckData() {
   };
 
   const updateDeckTitle = (deckId, newTitle) => {
-    const updatedDecks = decks.map(deck => deck.id === deckId ? { ...deck, title: newTitle } : deck);
+    const updatedDecks = decks.map(deck => {
+      if (deck.id === deckId) {
+        return { ...deck, title: newTitle, lastUpdated: new Date().toISOString() };
+      }
+      return deck;
+    });
     setDecks(updatedDecks);
   };
 
