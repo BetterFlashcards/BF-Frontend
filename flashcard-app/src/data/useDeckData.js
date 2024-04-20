@@ -22,7 +22,7 @@ function useDeckData() {
     const updatedDecks = decks.map(deck => {
       if (deck.id === deckId) {
         const newCard = { id: uuidv4(), front, back };
-        return { ...deck, cards: [...deck.cards, newCard] };
+        return { ...deck, cards: [...deck.cards, newCard], lastUpdated: new Date().toISOString() };
       }
       return deck;
     });
