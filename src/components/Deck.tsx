@@ -4,6 +4,8 @@ import type { Card, Deck as DeckType } from "../types";
 import { CardManager, DeckManager } from "../data";
 import { CardChangeCallback } from "../data/CardManager";
 import { formatDate } from "../helpers";
+import { Button, Card as BootstrapCard, Container, Row, Col, InputGroup, FormControl } from 'react-bootstrap';
+
 
 interface DeckProps {
   deck: DeckType;
@@ -15,15 +17,28 @@ export const Deck: React.FC<DeckProps> = ({ deck }) => {
 
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortedCards, setSortedCards] = useState<Array<Card>>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const cardChangeCallback: CardChangeCallback = () => {
     setSortedCards([...cardManager.getCards(deck.id)]);
   };
 
   useEffect(() => {
-    cardManager.subscribe(cardChangeCallback);
-    return () => cardManager.unsubscribe(cardChangeCallback);
-  }, []);
+    let filtered = cardManager
+      .getCards(deck.id)
+      .filter((card) =>
+        card.front.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        card.back.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+    if (sortOrder === "asc") {
+      filtered.sort((a, b) => a.front.localeCompare(b.front));
+    } else if (sortOrder === "desc") {
+      filtered.sort((a, b) => b.front.localeCompare(a.front));
+    }
+
+    setSortedCards(filtered);
+  }, [searchTerm, sortOrder]);
 
   const handleDeleteDeck = () => {
     if (window.confirm("Are you sure you want to delete this deck?")) {
@@ -46,35 +61,38 @@ export const Deck: React.FC<DeckProps> = ({ deck }) => {
     }
   }
 
-  return (
-    <div className="deck-component">
-      <h2 className="deck-component__title">
-        {deck.title} - Cards: {sortedCards.length}
-        <button onClick={() => handleUpdateDeckTitle()}>Edit</button>
-        <button onClick={() => handleDeleteDeck()}>Delete</button>
-      </h2>
+return (
+  <BootstrapCard className="deck-component">
+    <BootstrapCard.Header>
+      <Row>
+        <Col>{deck.title} - Cards: {sortedCards.length}</Col>
+        <Col xs="auto">
+          <Button variant="primary" onClick={handleUpdateDeckTitle}>Edit</Button>
+          <Button variant="danger" onClick={handleDeleteDeck}>Delete</Button>
+        </Col>
+      </Row>
+    </BootstrapCard.Header>
+    <BootstrapCard.Body>
       <p>Last Updated: {formatDate(deck.lastUpdated)}</p>
-      <div>
-        <input type="text" placeholder="Search Flashcards" />
-        <button
-          onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-        >
+      <InputGroup className="mb-3">
+        <FormControl
+          type="text"
+          placeholder="Search Flashcards"
+          onChange={(e) => setSearchTerm(e.target.value)} // Add this line
+        />
+        <Button variant="outline-secondary" onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}>
           Sort {sortOrder === "asc" ? "Descending" : "Ascending"}
-        </button>
-      </div>
-      <button
-        className="deck-component__card-button"
-        onClick={() => handleAddCard()}
-      >
-        Add Card
-      </button>
-      <div className="deck-component__card-container">
+        </Button>
+      </InputGroup>
+      <Button variant="primary" onClick={handleAddCard}>Add Card</Button>
+      <Container className="deck-component__card-container">
         {sortedCards.length > 0 ? (
           sortedCards.map((card) => <Flashcard key={card.id} card={card} />)
         ) : (
           <p>No flashcards found.</p>
         )}
-      </div>
-    </div>
-  );
+      </Container>
+    </BootstrapCard.Body>
+  </BootstrapCard>
+);
 };
