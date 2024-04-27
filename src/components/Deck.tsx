@@ -24,6 +24,11 @@ export const Deck: React.FC<DeckProps> = ({ deck }) => {
   };
 
   useEffect(() => {
+    cardManager.subscribe(cardChangeCallback);
+    return () => cardManager.unsubscribe(cardChangeCallback);
+  }, []);
+
+  useEffect(() => {
     let filtered = cardManager
       .getCards(deck.id)
       .filter((card) =>
@@ -36,9 +41,8 @@ export const Deck: React.FC<DeckProps> = ({ deck }) => {
     } else if (sortOrder === "desc") {
       filtered.sort((a, b) => b.front.localeCompare(a.front));
     }
-
     setSortedCards(filtered);
-  }, [searchTerm, sortOrder]);
+  }, [searchTerm, sortOrder, deck.id]);
 
   const handleDeleteDeck = () => {
     if (window.confirm("Are you sure you want to delete this deck?")) {
