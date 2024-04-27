@@ -1,72 +1,30 @@
-import { useState, useEffect } from "react";
-import { Deck } from "./components/Deck";
-import { DeckManager } from "./data";
-import type { Deck as DeckType } from "./types";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Navbar, Nav } from 'react-bootstrap';
+import Home from "./components/ListPage";
+import AboutPage from "./components/AboutPage";
+
 function App() {
-  const deckManager = DeckManager.getInstance();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortedDecks, setSortedDecks] = useState<Array<DeckType>>([]);
-  const [sortOrder, setSortOrder] = useState<string | null>(null);
-
-  const deckCallback = (decks: Array<DeckType>) => {
-    setSortedDecks([...decks]);
-  };
-
-  useEffect(() => {
-    deckManager.subscribe(deckCallback);
-    return () => {
-      deckManager.unsubscribe(deckCallback);
-    };
-  }, []);
-
-  useEffect(() => {
-    let filtered = deckManager
-      .getDecks()
-      .filter((deck) =>
-        deck.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-
-    if (sortOrder === "asc") {
-      filtered.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortOrder === "desc") {
-      filtered.sort((a, b) => b.title.localeCompare(a.title));
-    }
-
-    setSortedDecks(filtered);
-  }, [searchTerm, sortOrder]);
-
-  const toggleSortOrder = () => {
-    setSortOrder((prevOrder: string | null) =>
-      prevOrder === "asc" ? "desc" : "asc"
-    );
-  };
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Flashcards App</h1>
-        <input
-          type="text"
-          placeholder="Search Decks"
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button
-          onClick={() =>
-            deckManager.createDeck(prompt("Enter new deck title:") || "")
-          }
-        >
-          Add New Deck
-        </button>
-        <button onClick={toggleSortOrder}>
-          Sort {sortOrder === "asc" ? "Descending" : "Ascending"}
-        </button>
-      </header>
-      {sortedDecks.length > 0 ? (
-        sortedDecks.map((deck) => <Deck key={deck.id} deck={deck} />)
-      ) : (
-        <p>No decks found!</p>
-      )}
-    </div>
+    <Router>
+      <div>
+        <Navbar bg="light" expand="lg">
+          <Navbar.Brand href="/">Flashcards App</Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="me-auto">
+              <Nav.Link as={Link} to="/list">Your Decks</Nav.Link>
+              <Nav.Link as={Link} to="/about">About</Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
+        </Navbar>
+
+        <Routes>
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/list" element={<Home />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
