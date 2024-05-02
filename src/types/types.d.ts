@@ -8,5 +8,6 @@ export interface Card {
 export interface Deck {
   id: string;
   title: string;
+  description: string;
   lastUpdated: string;
 }

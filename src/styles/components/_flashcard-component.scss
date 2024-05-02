@@ -1,18 +1,15 @@
 .flashcard-component {
   display: inline-block; /* Keeps the card and buttons grouped together */
   vertical-align: top; /* Aligns the card and buttons at their top edges */
-
+  width: 100%;
   &__controls {
     text-align: center;
   }
 
   &__content {
-    margin: 5px;
-    width: 200px;
     height: 200px;
     text-align: center;
     cursor: pointer;
-    perspective: 1000px;
     transition: transform 0.6s;
     transform-style: preserve-3d;
 

@@ -1,7 +1,7 @@
 import React, { MouseEventHandler, useState } from "react";
 import type { Card } from "../types";
 import { CardManager } from "../data";
-import { Button, Card as BootstrapCard } from 'react-bootstrap';
+import { Button, Card as BCard, ButtonGroup } from "react-bootstrap";
 
 interface FlashcardProps {
   card: Card;
@@ -28,20 +28,32 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card }) => {
   };
 
   return (
-    <BootstrapCard className="flashcard-component">
-      <BootstrapCard.Footer className="flashcard-component__controls">
-        <Button variant="primary" onClick={handleUpdateCard}>Edit</Button>
-        <Button variant="danger" onClick={handleDeleteCard}>Delete</Button>
-      </BootstrapCard.Footer>
-      <div
-        className={`flashcard-component__content ${
-          isFlipped ? "flashcard-component__content_flipped" : ""
-        }`}
-        onClick={handleClick}
-      >
-        <div className="flashcard-component__content__front">{card.front}</div>
-        <div className="flashcard-component__content__back">{card.back}</div>
-      </div>
-    </BootstrapCard>
+    <BCard className="flashcard-component">
+      <BCard.Body>
+        <div
+          className={`flashcard-component__content ${
+            isFlipped ? "flashcard-component__content_flipped" : ""
+          }`}
+          onClick={handleClick}
+        >
+          <div className="flashcard-component__content__front">
+            {card.front}
+          </div>
+          <div className="flashcard-component__content__back">{card.back}</div>
+        </div>
+      </BCard.Body>
+      <BCard.Footer className="flashcard-component__controls">
+        <div className="d-flex justify-content-end">
+          <ButtonGroup>
+            <Button variant="primary" size="sm" onClick={handleUpdateCard}>
+              Edit
+            </Button>
+            <Button variant="danger" size="sm" onClick={handleDeleteCard}>
+              Delete
+            </Button>
+          </ButtonGroup>
+        </div>
+      </BCard.Footer>
+    </BCard>
   );
 };

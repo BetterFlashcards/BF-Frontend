@@ -1,12 +1,17 @@
 import { Deck } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import CardManager from "./CardManager";
+import { getLocalData, storeData } from "../helpers";
 
 class DeckManager {
   private static instance: DeckManager;
   private decks: Array<Deck>;
   private subscribers: Array<ChangeCallback>;
+  private cardManager: CardManager;
   private constructor() {
-    this.decks = [];
+    this.cardManager = CardManager.getInstance();
+    const storedDecks = getLocalData<Array<Deck>>("decks");
+    this.decks = storedDecks || [];
     this.subscribers = [];
   }
 
@@ -19,10 +24,20 @@ class DeckManager {
   public getDecks(): Array<Deck> {
     return this.decks;
   }
-  public createDeck(title: string) {
+
+  public getDeckById(id: string): Deck | undefined {
+    return this.decks.find((item) => item.id === id);
+  }
+
+  public getCardCountByDeck(deckId: string) {
+    return this.cardManager.getCards(deckId).length;
+  }
+
+  public createDeck(title: string, description: string) {
     const newDeck: Deck = {
       id: uuidv4(),
       title,
+      description,
       lastUpdated: new Date().toISOString(),
     };
     this.decks.push(newDeck);
@@ -53,9 +68,11 @@ class DeckManager {
   }
 
   private notifySubscribers() {
+    storeData("decks", this.decks);
     this.subscribers.forEach((callback) => {
       callback(this.decks);
     });
+
   }
 }
 
