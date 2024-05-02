@@ -1,3 +1,4 @@
+import { getLocalData, storeData } from "../helpers";
 import { Card } from "../types";
 import { v4 as uuidv4 } from "uuid";
 
@@ -6,7 +7,8 @@ class CardManager {
   private cards: Array<Card>;
   private subscribers: Array<CardChangeCallback>;
   private constructor() {
-    this.cards = [];
+    const storedCards = getLocalData<Array<Card>>("cards");
+    this.cards = storedCards || [];
     this.subscribers = [];
   }
 
@@ -60,6 +62,7 @@ class CardManager {
   }
 
   private notifySubscribers() {
+    storeData("cards", this.cards);
     this.subscribers.forEach((callback) => {
       callback(this.cards);
     });
