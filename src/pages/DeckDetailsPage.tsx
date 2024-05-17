@@ -9,17 +9,17 @@ import {
   Col,
 } from "react-bootstrap";
 import { CardManager, DeckManager } from "../data";
-import { formatDate } from "../helpers";
 import { Card } from "../types";
 import { Flashcard } from "../components/Flashcard";
 import { CardChangeCallback } from "../data/CardManager";
 import { useParams } from "react-router-dom";
 
 const DeckDetailsPage: React.FC = () => {
-  const { id: deckId } = useParams();
+  const { id } = useParams();
+  const deckId = parseInt(id!);
   const deckManager = DeckManager.getInstance();
   const cardManager = CardManager.getInstance();
-  const deck = deckManager.getDeckById(deckId!);
+  const deck = deckManager.getDeckById(deckId);
 
   if (!deck)
     return (
@@ -72,7 +72,7 @@ const DeckDetailsPage: React.FC = () => {
     <Container fluid="lg" className="mt-5">
       <Row>
         <Col xs={8}>
-          <h1>{deck.title}</h1>
+          <h1>{deck.name}</h1>
         </Col>
         <Col xs={4} className="d-flex justify-content-end flex-wrap">
           <Button variant="primary" onClick={handleAddCard}>
@@ -81,7 +81,7 @@ const DeckDetailsPage: React.FC = () => {
         </Col>
       </Row>
       <BootstrapCard.Body className="mt-5">
-        <p>Last Updated: {formatDate(deck.lastUpdated)}</p>
+        <p>Last Updated: </p>
         <InputGroup className="mb-3">
           <FormControl
             type="text"

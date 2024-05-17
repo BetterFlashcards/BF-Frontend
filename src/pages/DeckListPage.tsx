@@ -27,7 +27,7 @@ const DeckListPage: React.FC = () => {
   const [validated, setValidated] = useState(false);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [targetDeckToDelete, setTargetDeckToDelete] = useState("");
+  const [targetDeckToDelete, setTargetDeckToDelete] = useState(0);
 
   const deckCallback = (decks: Array<DeckType>) => {
     setSortedDecks([...decks]);
@@ -35,10 +35,11 @@ const DeckListPage: React.FC = () => {
   };
 
   useEffect(() => {
-    setSortedDecks([...deckManager.getDecks()]);
-    setDeckCount(deckManager.getDecks().length);
-
     deckManager.subscribe(deckCallback);
+    deckManager.fetchDecks();
+    // setSortedDecks([...deckManager.getDecks()]);
+    // setDeckCount(deckManager.getDecks().length);
+
     return () => {
       deckManager.unsubscribe(deckCallback);
     };
@@ -48,13 +49,13 @@ const DeckListPage: React.FC = () => {
     let filtered = deckManager
       .getDecks()
       .filter((deck) =>
-        deck.title.toLowerCase().includes(searchTerm.toLowerCase())
+        deck.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
     if (sortOrder === "asc") {
-      filtered.sort((a, b) => a.title.localeCompare(b.title));
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOrder === "desc") {
-      filtered.sort((a, b) => b.title.localeCompare(a.title));
+      filtered.sort((a, b) => b.name.localeCompare(a.name));
     }
     setSortedDecks(filtered);
   }, [searchTerm, sortOrder]);
@@ -80,7 +81,7 @@ const DeckListPage: React.FC = () => {
     setNewDeckDescription("");
   }
 
-  function openDeleteModal(deckId: string) {
+  function openDeleteModal(deckId: number) {
     setShowDeleteModal(true);
     setTargetDeckToDelete(deckId);
   }

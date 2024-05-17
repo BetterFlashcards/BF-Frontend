@@ -2,11 +2,10 @@ import type { Deck as DeckType } from "../types";
 import { Button, Card as BCard, ButtonGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { DeckManager } from "../data";
-import { formatDate } from "../helpers";
 
 interface DeckProps {
   deck: DeckType;
-  onDelete: (deckId: string) => void;
+  onDelete: (deckId: number) => void;
 }
 
 export const Deck: React.FC<DeckProps> = ({ deck, onDelete }) => {
@@ -14,7 +13,7 @@ export const Deck: React.FC<DeckProps> = ({ deck, onDelete }) => {
   const navigate = useNavigate();
 
   const handleUpdateDeckTitle = () => {
-    const newTitle = prompt("New title for this deck:", deck.title);
+    const newTitle = prompt("New title for this deck:", deck.name);
     if (newTitle) {
       deckManager.updateDeckTitle(deck.id, newTitle);
     }
@@ -46,12 +45,10 @@ export const Deck: React.FC<DeckProps> = ({ deck, onDelete }) => {
         </div>
       </BCard.Header>
       <BCard.Body>
-        <BCard.Title>{deck.title}</BCard.Title>
-        <BCard.Text>{deck.description}</BCard.Text>
+        <BCard.Title>{deck.name}</BCard.Title>
+        <BCard.Text>{deck.language}</BCard.Text>
       </BCard.Body>
-      <BCard.Footer className="text-muted">
-        Last updated: {formatDate(deck.lastUpdated)}
-      </BCard.Footer>
+      <BCard.Footer className="text-muted">Last updated:</BCard.Footer>
     </BCard>
   );
 };
