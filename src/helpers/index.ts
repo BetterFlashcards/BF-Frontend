@@ -15,3 +15,6 @@ export function getLocalData<T>(key: string): T | null {
   if (!foundValue) return null;
   return JSON.parse(foundValue);
 }
+export function deleteLocalData(key: string): void {
+  localStorage.removeItem(key);
+}

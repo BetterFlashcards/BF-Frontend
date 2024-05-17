@@ -22,7 +22,7 @@ class CardManager {
     return this.cards;
   }
 
-  public getCards(deckId: string): Array<Card> {
+  public getCards(deckId: number): Array<Card> {
     return this.cards.filter((card) => card.deckId === deckId);
   }
 
@@ -32,7 +32,7 @@ class CardManager {
     this.notifySubscribers();
   }
 
-  public createCard(dekckId: string, front: string, back: string) {
+  public createCard(dekckId: number, front: string, back: string) {
     const newCard: Card = {
       deckId: dekckId,
       front,
