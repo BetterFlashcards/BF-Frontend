@@ -27,7 +27,9 @@
 @import "abstract/_mixins";
 
 //pages
-@import "pages/login-page";
+@import "pages/_login-page";
+@import "pages/_about-page";
+@import "pages/_home-page";
 
 //components
 @import "components/deck-component";
