@@ -32,16 +32,11 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card }) => {
   return (
     <BCard className={`flashcard-component ${isFlipped ? "flipped" : ""}`} onClick={handleClick}>
       <BCard.Body>
-        <div
-          className={`flashcard-component__content ${
-            isFlipped ? "flashcard-component__content_flipped" : ""
-          }`}
-          onClick={handleClick}
-        >
-          <div className="flashcard-component__content__front">
+        <div className="flashcard-content">
+          <div className="flashcard-front">
             {card.front_text}
           </div>
-          <div className="flashcard-component__content__back">
+          <div className="flashcard-back">
             {card.back_text}
           </div>
         </div>
