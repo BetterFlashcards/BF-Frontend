@@ -12,6 +12,7 @@ import ProtectedRoute from "./pages/ProtectedRoute";
 import React, { useEffect, useState } from "react";
 import { User } from "./types/types";
 import AuthService, { UserChangeCallback } from "./data/AuthService";
+import "./App.css";
 
 const App: React.FC = () => {
   const authService = AuthService.getInstance();
@@ -29,9 +30,11 @@ const App: React.FC = () => {
     <>
       <Router>
         <div>
-          <Navbar bg="light" expand="lg">
+          <Navbar bg="light" expand="lg" className="custom-navbar">
             <Container fluid="lg">
-              <Navbar.Brand href="/">Flashcards App</Navbar.Brand>
+              <Navbar.Brand href="/">
+                Flashcards App
+              </Navbar.Brand>
               <Navbar.Toggle aria-controls="basic-navbar-nav" />
               <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="me-auto" activeKey={location.pathname}>
@@ -46,7 +49,7 @@ const App: React.FC = () => {
                       <Button
                         type="button"
                         variant="link"
-                        className="text-decoration-none"
+                        className="text-decoration-none nav-button"
                         onClick={() => authService.logout()}
                       >
                         Logout
