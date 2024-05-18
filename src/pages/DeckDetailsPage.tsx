@@ -8,18 +8,18 @@ import {
   Row,
   Col,
 } from "react-bootstrap";
-import { CardManager, DeckManager } from "../data";
+import { CardService, DeckService } from "../data";
 import { Card } from "../types";
 import { Flashcard } from "../components/Flashcard";
-import { CardChangeCallback } from "../data/CardManager";
+import { CardChangeCallback } from "../data/CardService";
 import { useParams } from "react-router-dom";
 
 const DeckDetailsPage: React.FC = () => {
   const { id } = useParams();
   const deckId = parseInt(id!);
-  const deckManager = DeckManager.getInstance();
-  const cardManager = CardManager.getInstance();
-  const deck = deckManager.getDeckById(deckId);
+  const deckService = DeckService.getInstance();
+  const cardService = CardService.getInstance();
+  const deck = deckService.getDeckById(deckId);
 
   if (!deck)
     return (
@@ -36,27 +36,27 @@ const DeckDetailsPage: React.FC = () => {
   const [sortedCards, setSortedCards] = useState<Array<Card>>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const cardChangeCallback: CardChangeCallback = () => {
-    setSortedCards([...cardManager.getCards(deck.id)]);
+    setSortedCards([...cardService.getCards(deck.id)]);
   };
 
   useEffect(() => {
-    cardManager.subscribe(cardChangeCallback);
-    return () => cardManager.unsubscribe(cardChangeCallback);
+    cardService.subscribe(cardChangeCallback);
+    return () => cardService.unsubscribe(cardChangeCallback);
   }, []);
 
   useEffect(() => {
-    let filtered = cardManager
+    let filtered = cardService
       .getCards(deckId!)
       .filter(
         (card) =>
-          card.front.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          card.back.toLowerCase().includes(searchTerm.toLowerCase())
+          card.front_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          card.back_text.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
     if (sortOrder === "asc") {
-      filtered.sort((a, b) => a.front.localeCompare(b.front));
+      filtered.sort((a, b) => a.front_text.localeCompare(b.front_text));
     } else if (sortOrder === "desc") {
-      filtered.sort((a, b) => b.front.localeCompare(a.front));
+      filtered.sort((a, b) => b.front_text.localeCompare(a.front_text));
     }
     setSortedCards(filtered);
   }, [searchTerm, sortOrder, deck.id]);
@@ -65,7 +65,7 @@ const DeckDetailsPage: React.FC = () => {
     const front = prompt("Front of card:");
     const back = prompt("Back of card:");
     if (front && back) {
-      cardManager.createCard(deck!.id, front, back);
+      cardService.createCard(deck!, front, back);
     }
   }
   return (

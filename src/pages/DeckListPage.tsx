@@ -11,11 +11,14 @@ import {
   Form,
 } from "react-bootstrap";
 import { Deck } from "../components/Deck";
-import { DeckManager } from "../data";
+import { DeckService } from "../data";
 import type { Deck as DeckType } from "../types";
+import { useNavigate } from "react-router-dom";
 
 const DeckListPage: React.FC = () => {
-  const deckManager = DeckManager.getInstance();
+  const deckService = DeckService.getInstance();
+  const navigate = useNavigate();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sortedDecks, setSortedDecks] = useState<Array<DeckType>>([]);
   const [sortOrder, setSortOrder] = useState<string | null>(null);
@@ -23,7 +26,7 @@ const DeckListPage: React.FC = () => {
 
   const [show, setShow] = useState(false);
   const [newDeckName, setNewDeckName] = useState<string>("");
-  const [newDeckDescription, setNewDeckDescription] = useState<string>("");
+  const [language, setLanguage] = useState<string>("");
   const [validated, setValidated] = useState(false);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -35,18 +38,15 @@ const DeckListPage: React.FC = () => {
   };
 
   useEffect(() => {
-    deckManager.subscribe(deckCallback);
-    deckManager.fetchDecks();
-    // setSortedDecks([...deckManager.getDecks()]);
-    // setDeckCount(deckManager.getDecks().length);
-
+    deckService.subscribe(deckCallback);
+    deckService.fetchDecks();
     return () => {
-      deckManager.unsubscribe(deckCallback);
+      deckService.unsubscribe(deckCallback);
     };
   }, []);
 
   useEffect(() => {
-    let filtered = deckManager
+    let filtered = deckService
       .getDecks()
       .filter((deck) =>
         deck.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -66,7 +66,7 @@ const DeckListPage: React.FC = () => {
     );
   };
 
-  function handleCreateNewDeck(event: any) {
+  async function handleCreateNewDeck(event: any) {
     event.preventDefault();
     event.stopPropagation();
     const form = event.currentTarget;
@@ -74,11 +74,17 @@ const DeckListPage: React.FC = () => {
       setValidated(true);
       return;
     }
-    deckManager.createDeck(newDeckName, newDeckDescription);
+    const newDeck = await deckService.createDeck({
+      name: newDeckName,
+      language: language,
+    });
+    if (newDeck) {
+      navigate(`/decks/${newDeck.id}`);
+    }
     setValidated(false);
     setShow(false);
     setNewDeckName("");
-    setNewDeckDescription("");
+    setLanguage("");
   }
 
   function openDeleteModal(deckId: number) {
@@ -87,7 +93,7 @@ const DeckListPage: React.FC = () => {
   }
 
   function handleDeleteDeck() {
-    deckManager.deleteDeck(targetDeckToDelete);
+    deckService.deleteDeck(targetDeckToDelete);
     setShowDeleteModal(false);
   }
 
@@ -158,13 +164,13 @@ const DeckListPage: React.FC = () => {
               className="mb-3"
               controlId="deckCreateForm.descriptionControl"
             >
-              <Form.Label>Deck description</Form.Label>
+              <Form.Label>Deck Language</Form.Label>
               <Form.Control
-                as="textarea"
-                rows={3}
+                type="text"
+                placeholder="Language"
                 required
-                value={newDeckDescription}
-                onChange={(e) => setNewDeckDescription(e.target.value)}
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
               />
             </Form.Group>
           </Modal.Body>

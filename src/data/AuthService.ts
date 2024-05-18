@@ -73,6 +73,7 @@ class AuthService {
 
   private setAccesToken(token: string | null) {
     this.accessToken = token;
+    this.authenticatedClient.defaults.headers.Authorization = `Bearer ${this.accessToken}`;
   }
 
   public getAccessToken(): string | null {
@@ -148,7 +149,6 @@ class AuthService {
         refresh: this.refreshToken,
       });
       this.setAccesToken(res.data.access);
-      console.log(this.accessToken);
     } catch {
       this.setAccesToken(null);
       this.setRefreshToken(null);

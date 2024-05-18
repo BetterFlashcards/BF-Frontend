@@ -1,7 +1,7 @@
 import type { Deck as DeckType } from "../types";
 import { Button, Card as BCard, ButtonGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { DeckManager } from "../data";
+import { DeckService } from "../data";
 
 interface DeckProps {
   deck: DeckType;
@@ -9,13 +9,13 @@ interface DeckProps {
 }
 
 export const Deck: React.FC<DeckProps> = ({ deck, onDelete }) => {
-  const deckManager = DeckManager.getInstance();
+  const deckService = DeckService.getInstance();
   const navigate = useNavigate();
 
   const handleUpdateDeckTitle = () => {
     const newTitle = prompt("New title for this deck:", deck.name);
     if (newTitle) {
-      deckManager.updateDeckTitle(deck.id, newTitle);
+      deckService.updateDeckTitle(deck.id, newTitle);
     }
   };
 
@@ -26,7 +26,7 @@ export const Deck: React.FC<DeckProps> = ({ deck, onDelete }) => {
     >
       <BCard.Header>
         <div className="d-flex align-items-center justify-content-between">
-          <span>Cards: {deckManager.getCardCountByDeck(deck.id)}</span>
+          <span>Cards: {deckService.getCardCountByDeck(deck.id)}</span>
           <ButtonGroup>
             <Button variant="primary" size="sm" onClick={handleUpdateDeckTitle}>
               Edit
