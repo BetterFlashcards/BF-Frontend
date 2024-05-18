@@ -9,11 +9,14 @@ import {
   ButtonGroup,
   Modal,
   Form,
+  Card,
 } from "react-bootstrap";
+import { FaPlus, FaSort } from "react-icons/fa";
 import { Deck } from "../components/Deck";
 import { DeckService } from "../data";
 import type { Deck as DeckType } from "../types";
 import { useNavigate } from "react-router-dom";
+// import "./DeckListPage.scss";
 
 const DeckListPage: React.FC = () => {
   const deckService = DeckService.getInstance();
@@ -98,7 +101,7 @@ const DeckListPage: React.FC = () => {
   }
 
   return (
-    <Container fluid="lg" className="mt-5">
+    <Container fluid="lg" className="deck-list-page mt-5">
       <Row>
         <Col xs={8}>
           <h1>All Decks</h1>
@@ -106,7 +109,7 @@ const DeckListPage: React.FC = () => {
         <Col xs={4} className="d-flex justify-content-end flex-wrap">
           <ButtonGroup>
             <Button variant="primary" onClick={() => setShow(true)}>
-              Add New Deck
+              <FaPlus /> Add New Deck
             </Button>
           </ButtonGroup>
         </Col>
@@ -121,7 +124,7 @@ const DeckListPage: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <Button variant="secondary" onClick={toggleSortOrder}>
-                Sort {sortOrder === "asc" ? "Descending" : "Ascending"}
+                <FaSort /> Sort {sortOrder === "asc" ? "Descending" : "Ascending"}
               </Button>
             </InputGroup>
             <Row className="gy-4">
@@ -187,7 +190,7 @@ const DeckListPage: React.FC = () => {
 
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Are you sure you want to delete this deck</Modal.Title>
+          <Modal.Title>Are you sure you want to delete this deck?</Modal.Title>
         </Modal.Header>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
