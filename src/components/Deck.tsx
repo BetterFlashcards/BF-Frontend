@@ -20,13 +20,10 @@ export const Deck: React.FC<DeckProps> = ({ deck, onDelete }) => {
   };
 
   return (
-    <BCard
-      className="deck-component"
-      onClick={() => navigate(`/decks/${deck.id}`)}
-    >
+    <BCard className="deck-component">
       <BCard.Header>
         <div className="d-flex align-items-center justify-content-between">
-          <span>Cards: {deckManager.getCardCountByDeck(deck.id)}</span>
+          <span className="card-count">Cards: {deckManager.getCardCountByDeck(deck.id)}</span>
           <ButtonGroup>
             <Button variant="primary" size="sm" onClick={handleUpdateDeckTitle}>
               Edit
@@ -44,7 +41,7 @@ export const Deck: React.FC<DeckProps> = ({ deck, onDelete }) => {
           </ButtonGroup>
         </div>
       </BCard.Header>
-      <BCard.Body>
+      <BCard.Body onClick={() => navigate(`/decks/${deck.id}`)}>
         <BCard.Title>{deck.name}</BCard.Title>
         <BCard.Text>{deck.language}</BCard.Text>
       </BCard.Body>
