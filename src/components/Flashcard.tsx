@@ -6,6 +6,7 @@ import { Button, Card as BCard, ButtonGroup } from "react-bootstrap";
 interface FlashcardProps {
   card: Card;
 }
+
 export const Flashcard: React.FC<FlashcardProps> = ({ card }) => {
   const cardManager = CardManager.getInstance();
   const [isFlipped, setIsFlipped] = useState(false);
@@ -14,6 +15,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card }) => {
     e.stopPropagation();
     if (card.id) cardManager.deleteCard(card.id);
   };
+
   const handleUpdateCard: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
     const front = prompt("New front text:", card.front);
@@ -28,21 +30,18 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card }) => {
   };
 
   return (
-    <BCard className="flashcard-component">
+    <BCard className={`flashcard-component ${isFlipped ? "flipped" : ""}`} onClick={handleClick}>
       <BCard.Body>
-        <div
-          className={`flashcard-component__content ${
-            isFlipped ? "flashcard-component__content_flipped" : ""
-          }`}
-          onClick={handleClick}
-        >
-          <div className="flashcard-component__content__front">
+        <div className="flashcard-content">
+          <div className="flashcard-front">
             {card.front}
           </div>
-          <div className="flashcard-component__content__back">{card.back}</div>
+          <div className="flashcard-back">
+            {card.back}
+          </div>
         </div>
       </BCard.Body>
-      <BCard.Footer className="flashcard-component__controls">
+      <BCard.Footer className="flashcard-controls">
         <div className="d-flex justify-content-end">
           <ButtonGroup>
             <Button variant="primary" size="sm" onClick={handleUpdateCard}>

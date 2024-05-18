@@ -1,24 +1,62 @@
+.deck-list-page {
+  h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 20px;
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-group {
+    margin-bottom: 20px;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
 .deck-component {
   border: 1px solid #000;
   border-radius: 10px;
   padding: 20px;
-  // margin: 20px;
   background-color: #f5f5f5;
   cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 
-  &__card-container {
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-header {
     display: flex;
-    flex-wrap: wrap; /* Allows wrapping to the next line if there's not enough space */
-    justify-content: center; /* Center cards horizontally */
-    gap: 20px; /* Space between cards */
+    justify-content: space-between;
+    align-items: center;
   }
 
-  &__title {
-    font-size: 24px;
+  .card-title {
+    font-size: 1.5rem;
     font-weight: bold;
+    color: #007bff;
   }
 
-  &__card-button {
-    margin-top: 10px;
+  .card-count {
+    margin-right: 10px;
+  }
+
+  .card-footer {
+    font-size: 0.9rem;
+    color: #777;
+  }
+
+  .btn-group .btn {
+    margin-right: 5px;
   }
 }

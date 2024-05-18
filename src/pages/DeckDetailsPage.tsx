@@ -13,6 +13,7 @@ import { Card } from "../types";
 import { Flashcard } from "../components/Flashcard";
 import { CardChangeCallback } from "../data/CardManager";
 import { useParams } from "react-router-dom";
+import { FaPlus, FaSort } from "react-icons/fa";
 
 const DeckDetailsPage: React.FC = () => {
   const { id } = useParams();
@@ -25,8 +26,8 @@ const DeckDetailsPage: React.FC = () => {
     return (
       <Container fluid="lg" className="mt-5">
         <Row>
-          <Col xs={8}>
-            <h1>Oops, no deck not found with id: {deckId}</h1>
+          <Col xs={12}>
+            <h1>Oops, no deck found with id: {deckId}</h1>
           </Col>
         </Row>
       </Container>
@@ -68,31 +69,32 @@ const DeckDetailsPage: React.FC = () => {
       cardManager.createCard(deck!.id, front, back);
     }
   }
+
   return (
-    <Container fluid="lg" className="mt-5">
+    <Container fluid="lg" className="deck-details-page mt-5">
       <Row>
         <Col xs={8}>
           <h1>{deck.name}</h1>
         </Col>
         <Col xs={4} className="d-flex justify-content-end flex-wrap">
           <Button variant="primary" onClick={handleAddCard}>
-            Add Card
+            <FaPlus /> Add Card
           </Button>
         </Col>
       </Row>
       <BootstrapCard.Body className="mt-5">
-        <p>Last Updated: </p>
+        <p>Last Updated: {new Date().toLocaleDateString()}</p>
         <InputGroup className="mb-3">
           <FormControl
             type="text"
             placeholder="Search Flashcards"
-            onChange={(e) => setSearchTerm(e.target.value)} // Add this line
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
           <Button
             variant="outline-secondary"
             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
           >
-            Sort {sortOrder === "asc" ? "Descending" : "Ascending"}
+            <FaSort /> Sort {sortOrder === "asc" ? "Descending" : "Ascending"}
           </Button>
         </InputGroup>
 
