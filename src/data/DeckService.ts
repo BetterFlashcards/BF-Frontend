@@ -1,27 +1,27 @@
 import { Deck } from "../types";
-import CardManager from "./CardManager";
+import CardService from "./CardService";
 import { storeData } from "../helpers";
 import AuthService from "./AuthService";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 
-class DeckManager {
-  private static instance: DeckManager;
+class DeckService {
+  private static instance: DeckService;
   private decks: Array<Deck>;
   private subscribers: Array<ChangeCallback>;
-  private cardManager: CardManager;
+  private cardService: CardService;
   private authService: AuthService;
   private constructor() {
     this.authService = AuthService.getInstance();
-    this.cardManager = CardManager.getInstance();
+    this.cardService = CardService.getInstance();
     this.decks = [];
     this.subscribers = [];
   }
 
-  public static getInstance(): DeckManager {
-    if (DeckManager.instance === undefined)
-      DeckManager.instance = new DeckManager();
-    return DeckManager.instance;
+  public static getInstance(): DeckService {
+    if (DeckService.instance === undefined)
+      DeckService.instance = new DeckService();
+    return DeckService.instance;
   }
 
   public getDecks(): Array<Deck> {
@@ -33,26 +33,25 @@ class DeckManager {
   }
 
   public getCardCountByDeck(deckId: number) {
-    return this.cardManager.getCards(deckId).length;
+    return this.cardService.getCards(deckId).length;
   }
 
-  public async createDeck(name: string, language: string) {
-    const data = { name, language };
+  public async createDeck(data: {
+    name: string;
+    language: string;
+  }): Promise<Deck | null> {
     try {
       const res = await this.authService
         .getAuthenticatedClient()
         .post<{ id: number }>("/decks", data);
-      if (res.status === 200) {
-        const newDeck: Deck = {
-          id: res.data.id,
-          name,
-          language,
-        };
-        this.decks.push(newDeck);
-        this.notifySubscribers();
-        toast.success("Deck created successfully!");
-        return true;
-      }
+      const newDeck: Deck = {
+        id: res.data.id,
+        name: data.name,
+        language: data.language,
+      };
+      this.decks.push(newDeck);
+      toast.success("Deck created successfully!");
+      return newDeck;
     } catch (error) {
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<{ detail: string }>;
@@ -61,20 +60,18 @@ class DeckManager {
       } else {
         toast.error(error as string);
       }
+      return null;
     }
-    return false;
   }
 
-  public async fetchDecks() {
+  public async fetchDecks(): Promise<Array<Deck> | null> {
     try {
       const res = await this.authService
         .getAuthenticatedClient()
         .get<{ items: Array<Deck> }>("/decks");
-      if (res.status === 200) {
-        this.decks = res.data.items;
-        this.notifySubscribers();
-        return true;
-      }
+      this.decks = res.data.items;
+      this.notifySubscribers();
+      return res.data.items;
     } catch (error) {
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<{ detail: string }>;
@@ -84,13 +81,27 @@ class DeckManager {
         toast.error(error as string);
       }
     }
-    return false;
+    return null;
   }
 
-  public deleteDeck(id: number) {
-    const foundIndex = this.decks.findIndex((deck) => deck.id === id);
-    this.decks.splice(foundIndex, 1);
-    this.notifySubscribers();
+  public async deleteDeck(id: number): Promise<void> {
+    try {
+      await this.authService
+        .getAuthenticatedClient()
+        .delete<{ items: Array<Deck> }>("/decks/" + id);
+      const foundIndex = this.decks.findIndex((deck) => deck.id === id);
+      this.decks.splice(foundIndex, 1);
+      this.notifySubscribers();
+      toast.success("Deck deleted successfully!");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<{ detail: string }>;
+        const msg = axiosError.response?.data.detail;
+        toast.error(msg);
+      } else {
+        toast.error(error as string);
+      }
+    }
   }
 
   public updateDeckTitle = (id: number, newTitle: string) => {
@@ -119,4 +130,4 @@ class DeckManager {
 
 export type ChangeCallback = (decks: Array<Deck>) => void;
 
-export default DeckManager;
+export default DeckService;

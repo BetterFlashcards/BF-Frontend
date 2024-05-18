@@ -1,4 +1,4 @@
-import DeckManager from "./DeckManager";
-import CardManager from "./CardManager";
+import DeckService from "./DeckService";
+import CardService from "./CardService";
 
-export { DeckManager, CardManager };
+export { DeckService, CardService };

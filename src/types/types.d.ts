@@ -3,10 +3,10 @@ export interface User {
 }
 
 export interface Card {
-  id: string;
-  deckId: number | null;
-  front: string;
-  back: string;
+  id: number;
+  front_text: string;
+  back_text: string;
+  deck: Deck;
 }
 
 export interface Deck {
