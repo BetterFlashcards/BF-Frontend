@@ -33,7 +33,7 @@ class DeckService {
   }
 
   public getCardCountByDeck(deckId: number) {
-    return this.cardService.getCards(deckId).length;
+    return this.cardService.getCards().length;
   }
 
   public async createDeck(data: {
@@ -86,9 +86,7 @@ class DeckService {
 
   public async deleteDeck(id: number): Promise<void> {
     try {
-      await this.authService
-        .getAuthenticatedClient()
-        .delete<{ items: Array<Deck> }>("/decks/" + id);
+      await this.authService.getAuthenticatedClient().delete("/decks/" + id);
       const foundIndex = this.decks.findIndex((deck) => deck.id === id);
       this.decks.splice(foundIndex, 1);
       this.notifySubscribers();

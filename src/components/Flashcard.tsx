@@ -5,15 +5,16 @@ import { Button, Card as BCard, ButtonGroup } from "react-bootstrap";
 
 interface FlashcardProps {
   card: Card;
+  onDelete: (card: Card) => void;
 }
 
-export const Flashcard: React.FC<FlashcardProps> = ({ card }) => {
+export const Flashcard: React.FC<FlashcardProps> = ({ card, onDelete }) => {
   const cardService = CardService.getInstance();
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleDeleteCard: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
-    if (card.id) cardService.deleteCard(card.id);
+    onDelete(card);
   };
 
   const handleUpdateCard: MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -30,15 +31,14 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card }) => {
   };
 
   return (
-    <BCard className={`flashcard-component ${isFlipped ? "flipped" : ""}`} onClick={handleClick}>
+    <BCard
+      className={`flashcard-component ${isFlipped ? "flipped" : ""}`}
+      onClick={handleClick}
+    >
       <BCard.Body>
         <div className="flashcard-content">
-          <div className="flashcard-front">
-            {card.front_text}
-          </div>
-          <div className="flashcard-back">
-            {card.back_text}
-          </div>
+          <div className="flashcard-front">{card.front_text}</div>
+          <div className="flashcard-back">{card.back_text}</div>
         </div>
       </BCard.Body>
       <BCard.Footer className="flashcard-controls">

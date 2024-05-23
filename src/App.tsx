@@ -16,12 +16,10 @@ import "./App.css";
 
 const App: React.FC = () => {
   const authService = AuthService.getInstance();
-  const [user, setUser] = useState<User | null>(null);
-
+  const [user, setUser] = useState<User | null>(authService.getUser());
   const userChangeCallback: UserChangeCallback = (u) => setUser(u);
 
   useEffect(() => {
-    setUser(authService.getUser());
     authService.subscribe(userChangeCallback);
     return () => authService.unsubscribe(userChangeCallback);
   }, []);
@@ -32,9 +30,7 @@ const App: React.FC = () => {
         <div>
           <Navbar bg="light" expand="lg" className="custom-navbar">
             <Container fluid="lg">
-              <Navbar.Brand href="/">
-                Flashcards App
-              </Navbar.Brand>
+              <Navbar.Brand href="/">Flashcards App</Navbar.Brand>
               <Navbar.Toggle aria-controls="basic-navbar-nav" />
               <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="me-auto" activeKey={location.pathname}>

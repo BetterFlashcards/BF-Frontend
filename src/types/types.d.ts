@@ -3,10 +3,12 @@ export interface User {
 }
 
 export interface Card {
+  deck_id: number;
   id: number;
   front_text: string;
   back_text: string;
-  deck: Deck;
+  draft: boolean;
+  related_book: number;
 }
 
 export interface Deck {

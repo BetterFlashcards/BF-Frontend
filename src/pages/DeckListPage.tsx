@@ -9,14 +9,25 @@ import {
   ButtonGroup,
   Modal,
   Form,
-  Card,
 } from "react-bootstrap";
 import { FaPlus, FaSort } from "react-icons/fa";
 import { Deck } from "../components/Deck";
 import { DeckService } from "../data";
 import type { Deck as DeckType } from "../types";
 import { useNavigate } from "react-router-dom";
-// import "./DeckListPage.scss";
+import ContentLoader from "react-content-loader";
+
+const DeckListLoader: React.FC = () => (
+  <>
+    {[...Array(12).keys()].map((item) => (
+      <Col key={item} sm={12} md={6} lg={4} xl={3}>
+        <ContentLoader viewBox="0 0 10 7">
+          <rect x="0" y="0" rx="1" ry="1" width="10" height="7" />
+        </ContentLoader>
+      </Col>
+    ))}
+  </>
+);
 
 const DeckListPage: React.FC = () => {
   const deckService = DeckService.getInstance();
@@ -26,6 +37,7 @@ const DeckListPage: React.FC = () => {
   const [sortedDecks, setSortedDecks] = useState<Array<DeckType>>([]);
   const [sortOrder, setSortOrder] = useState<string | null>(null);
   const [deckCount, setDeckCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
 
   const [show, setShow] = useState(false);
   const [newDeckName, setNewDeckName] = useState<string>("");
@@ -38,6 +50,7 @@ const DeckListPage: React.FC = () => {
   const deckCallback = (decks: Array<DeckType>) => {
     setSortedDecks([...decks]);
     setDeckCount(decks.length);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -115,29 +128,29 @@ const DeckListPage: React.FC = () => {
         </Col>
       </Row>
       <div className="mt-5">
-        {deckCount > 0 ? (
-          <>
-            <InputGroup className="mb-3">
-              <FormControl
-                type="text"
-                placeholder="Search Decks"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Button variant="secondary" onClick={toggleSortOrder}>
-                <FaSort /> Sort {sortOrder === "asc" ? "Descending" : "Ascending"}
-              </Button>
-            </InputGroup>
-            <Row className="gy-4">
-              {sortedDecks.map((deck) => (
-                <Col sm={12} md={6} lg={4} xl={3} key={deck.id}>
-                  <Deck deck={deck} onDelete={openDeleteModal} />
-                </Col>
-              ))}
-            </Row>
-          </>
-        ) : (
-          <p>No decks found!</p>
-        )}
+        <InputGroup className="mb-3">
+          <FormControl
+            type="text"
+            placeholder="Search Decks"
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Button variant="secondary" onClick={toggleSortOrder}>
+            <FaSort /> Sort {sortOrder === "asc" ? "Descending" : "Ascending"}
+          </Button>
+        </InputGroup>
+        <Row className="gy-4">
+          {loading ? (
+            <DeckListLoader />
+          ) : deckCount > 0 ? (
+            sortedDecks.map((deck) => (
+              <Col sm={12} md={6} lg={4} xl={3} key={deck.id}>
+                <Deck deck={deck} onDelete={openDeleteModal} />
+              </Col>
+            ))
+          ) : (
+            <p>No decks found!</p>
+          )}
+        </Row>
       </div>
 
       <Modal show={show} onHide={() => setShow(false)}>

@@ -1,7 +1,7 @@
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { storeData } from "../helpers";
-import { Card, Deck } from "../types";
+import { Card } from "../types";
 import AuthService from "./AuthService";
 
 class CardService {
@@ -22,22 +22,16 @@ class CardService {
     return CardService.instance;
   }
 
-  public getAllCards(): Array<Card> {
+  public getCards(): Array<Card> {
     return this.cards;
   }
 
-  public getCards(deckId: number): Array<Card> {
-    return this.cards.filter((card) => card.deck.id === deckId);
-  }
-
-  public deleteCard(id: number) {
-    const foundIndex = this.cards.findIndex((card) => card.id === id);
-    this.cards.splice(foundIndex, 1);
-    this.notifySubscribers();
+  public resetCards() {
+    this.cards = [];
   }
 
   public async createCard(
-    deck: Deck,
+    deck_id: number,
     front_text: string,
     back_text: string
   ): Promise<Card | null> {
@@ -48,13 +42,8 @@ class CardService {
     try {
       const res = await this.authService
         .getAuthenticatedClient()
-        .post<{ id: number }>(`/decks/${deck.id}/cards`, data);
-      const newCard: Card = {
-        id: res.data.id,
-        deck,
-        front_text,
-        back_text,
-      };
+        .post<Card>(`/decks/${deck_id}/cards`, data);
+      const newCard = res.data;
       this.cards.push(newCard);
       this.notifySubscribers();
       toast.success("Flashcard created successfully!");
@@ -71,11 +60,11 @@ class CardService {
     }
   }
 
-  public async fetchCards(): Promise<Array<Card> | null> {
+  public async fetchCards(deck_id: number): Promise<Array<Card> | null> {
     try {
       const res = await this.authService
         .getAuthenticatedClient()
-        .get<{ items: Array<Card> }>("/decks/34/cares");
+        .get<{ items: Array<Card> }>(`/decks/${deck_id}/cards`);
       this.cards = res.data.items;
       this.notifySubscribers();
       return res.data.items;
@@ -89,6 +78,27 @@ class CardService {
       }
     }
     return null;
+  }
+
+  public async deleteCard(deck_id: number, card_id: number): Promise<void> {
+    try {
+      await this.authService
+        .getAuthenticatedClient()
+        .delete(`/decks/${deck_id}/cards/${card_id}`);
+
+      const foundIndex = this.cards.findIndex((card) => card.id === card_id);
+      this.cards.splice(foundIndex, 1);
+      this.notifySubscribers();
+      toast.success("Card deleted successfully!");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<{ detail: string }>;
+        const msg = axiosError.response?.data.detail;
+        toast.error(msg);
+      } else {
+        toast.error(error as string);
+      }
+    }
   }
 
   public updateCard(id: number, front_text: string, back_text: string) {

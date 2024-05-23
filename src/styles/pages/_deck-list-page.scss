@@ -1,0 +1,37 @@
+.deck-grid {
+  margin-left: -0.25rem;
+  margin-right: -0.25rem;
+  display: flex;
+  flex-wrap: wrap;
+
+  @media only screen and (min-width: 768px) {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+  }
+
+  &__item {
+    width: 50%;
+    z-index: 1;
+
+    padding-top: 0.5rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+
+    &:first-child,
+    &:nth-child(2) {
+      padding-top: 0;
+    }
+
+    @media only screen and (min-width: 768px) {
+      width: 33.3%;
+      padding-top: 1rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      &:first-child,
+      &:nth-child(2),
+      &:nth-child(3) {
+        padding-top: 0;
+      }
+    }
+  }
+}
