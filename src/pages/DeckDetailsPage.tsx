@@ -7,47 +7,62 @@ import {
   FormControl,
   Row,
   Col,
+  Modal,
+  Form,
 } from "react-bootstrap";
-import { CardService, DeckService } from "../data";
+import { CardService } from "../data";
 import { Card } from "../types";
 import { Flashcard } from "../components/Flashcard";
 import { CardChangeCallback } from "../data/CardService";
 import { useParams } from "react-router-dom";
 import { FaPlus, FaSort } from "react-icons/fa";
+import ContentLoader from "react-content-loader";
+
+const CardListLoader: React.FC = () => (
+  <>
+    {[...Array(12).keys()].map((item) => (
+      <Col key={item} sm={12} md={6} lg={4} xl={3}>
+        <ContentLoader viewBox="0 0 10 7">
+          <rect x="0" y="0" rx="1" ry="1" width="10" height="7" />
+        </ContentLoader>
+      </Col>
+    ))}
+  </>
+);
 
 const DeckDetailsPage: React.FC = () => {
   const { id } = useParams();
   const deckId = parseInt(id!);
-  const deckService = DeckService.getInstance();
   const cardService = CardService.getInstance();
-  const deck = deckService.getDeckById(deckId);
-
-  if (!deck)
-    return (
-      <Container fluid="lg" className="mt-5">
-        <Row>
-          <Col xs={12}>
-            <h1>Oops, no deck found with id: {deckId}</h1>
-          </Col>
-        </Row>
-      </Container>
-    );
+  cardService.resetCards();
 
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortedCards, setSortedCards] = useState<Array<Card>>([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [createModalValidated, setCreateModalValidated] = useState(false);
+  const [newCardFrontText, setNewCardFrontText] = useState("");
+  const [newCardBackText, setNewCardBackText] = useState("");
+
+  const [targetCardToDelete, setTargetCardToDelete] = useState<Card | null>(
+    null
+  );
+
   const cardChangeCallback: CardChangeCallback = () => {
-    setSortedCards([...cardService.getCards(deck.id)]);
+    setSortedCards([...cardService.getCards()]);
   };
 
   useEffect(() => {
     cardService.subscribe(cardChangeCallback);
+    cardService.fetchCards(deckId);
     return () => cardService.unsubscribe(cardChangeCallback);
   }, []);
 
   useEffect(() => {
     let filtered = cardService
-      .getCards(deckId!)
+      .getCards()
       .filter(
         (card) =>
           card.front_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -60,24 +75,46 @@ const DeckDetailsPage: React.FC = () => {
       filtered.sort((a, b) => b.front_text.localeCompare(a.front_text));
     }
     setSortedCards(filtered);
-  }, [searchTerm, sortOrder, deck.id]);
+  }, [searchTerm, sortOrder]);
 
-  function handleAddCard() {
-    const front = prompt("Front of card:");
-    const back = prompt("Back of card:");
-    if (front && back) {
-      cardService.createCard(deck!, front, back);
+  async function handleCreateCard(event: any) {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      setCreateModalValidated(true);
+      return;
     }
+    const card = await cardService.createCard(
+      deckId,
+      newCardFrontText,
+      newCardBackText
+    );
+    if (card) {
+    }
+    setCreateModalValidated(false);
+    setShowCreateModal(false);
+    setNewCardFrontText("");
+    setNewCardBackText("");
+  }
+
+  function handleOpenDeleteModal(card: Card) {
+    setTargetCardToDelete(card);
+    setShowDeleteModal(true);
+  }
+
+  async function handleDeleteCard() {
+    await cardService.deleteCard(deckId, 0);
   }
 
   return (
     <Container fluid="lg" className="deck-details-page mt-5">
       <Row>
         <Col xs={8}>
-          <h1>{deck.name}</h1>
+          <h1>{deckId}</h1>
         </Col>
         <Col xs={4} className="d-flex justify-content-end flex-wrap">
-          <Button variant="primary" onClick={handleAddCard}>
+          <Button variant="primary" onClick={() => setShowCreateModal(true)}>
             <FaPlus /> Add Card
           </Button>
         </Col>
@@ -102,7 +139,10 @@ const DeckDetailsPage: React.FC = () => {
           {sortedCards.length > 0 ? (
             sortedCards.map((card) => (
               <Col sm={12} md={6} lg={4} xl={3} key={card.id}>
-                <Flashcard card={card} />
+                <Flashcard
+                  card={card}
+                  onDelete={(card) => handleOpenDeleteModal(card)}
+                />
               </Col>
             ))
           ) : (
@@ -110,6 +150,74 @@ const DeckDetailsPage: React.FC = () => {
           )}
         </Row>
       </BootstrapCard.Body>
+
+      <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
+        <Form
+          noValidate
+          validated={createModalValidated}
+          onSubmit={handleCreateCard}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Enter new deck details</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form.Group
+              className="mb-3"
+              controlId="deckCreateForm.titleControl"
+            >
+              <Form.Label>Deck title</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Deck title"
+                required
+                autoFocus
+                value={newCardFrontText}
+                onChange={(e) => setNewCardFrontText(e.target.value)}
+              />
+              <Form.Control.Feedback type="invalid">
+                Please enter title.
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group
+              className="mb-3"
+              controlId="deckCreateForm.descriptionControl"
+            >
+              <Form.Label>Deck Language</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Language"
+                required
+                value={newCardBackText}
+                onChange={(e) => setNewCardBackText(e.target.value)}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => setShowCreateModal(false)}
+            >
+              Close
+            </Button>
+            <Button type="submit" variant="primary">
+              Submit
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Are you sure you want to delete this card?</Modal.Title>
+        </Modal.Header>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            No
+          </Button>
+          <Button variant="danger" onClick={() => handleDeleteCard()}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
