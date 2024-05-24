@@ -158,34 +158,34 @@ const DeckDetailsPage: React.FC = () => {
           onSubmit={handleCreateCard}
         >
           <Modal.Header closeButton>
-            <Modal.Title>Enter new deck details</Modal.Title>
+            <Modal.Title>New Flashcard</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form.Group
               className="mb-3"
               controlId="deckCreateForm.titleControl"
             >
-              <Form.Label>Deck title</Form.Label>
+              <Form.Label>Word context</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Deck title"
+                placeholder="Type your word here"
                 required
                 autoFocus
                 value={newCardFrontText}
                 onChange={(e) => setNewCardFrontText(e.target.value)}
               />
               <Form.Control.Feedback type="invalid">
-                Please enter title.
+                Please enter the word.
               </Form.Control.Feedback>
             </Form.Group>
             <Form.Group
               className="mb-3"
               controlId="deckCreateForm.descriptionControl"
             >
-              <Form.Label>Deck Language</Form.Label>
+              <Form.Label>Translation</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Language"
+                placeholder="Provide the translation here"
                 required
                 value={newCardBackText}
                 onChange={(e) => setNewCardBackText(e.target.value)}
