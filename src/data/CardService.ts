@@ -80,11 +80,11 @@ class CardService {
     return null;
   }
 
-  public async deleteCard(deck_id: number, card_id: number): Promise<void> {
+  public async deleteCard(card_id: number): Promise<void> {
     try {
       await this.authService
         .getAuthenticatedClient()
-        .delete(`/decks/${deck_id}/cards/${card_id}`);
+        .delete(`/cards/${card_id}`);
 
       const foundIndex = this.cards.findIndex((card) => card.id === card_id);
       this.cards.splice(foundIndex, 1);

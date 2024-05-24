@@ -104,7 +104,7 @@ const DeckDetailsPage: React.FC = () => {
   }
 
   async function handleDeleteCard() {
-    await cardService.deleteCard(deckId, 0);
+    await cardService.deleteCard(targetCardToDelete!.id);
   }
 
   return (
