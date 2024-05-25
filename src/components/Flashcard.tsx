@@ -21,7 +21,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card, onDelete }) => {
   const handleUpdateCard: MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.stopPropagation();
     const front = prompt("New front text:", card.front_text);
-    const targetLang = prompt("Target language (e.g., 'en' for English):", "en"); // Default to Spanish
+    const targetLang = prompt("Target language (e.g., 'en' for English):", "en");
     if (front && targetLang) {
       try {
         const initialTranslation = await cardService.translateWord(front, targetLang);

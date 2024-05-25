@@ -48,7 +48,7 @@ const DeckDetailsPage: React.FC = () => {
   const [createModalValidated, setCreateModalValidated] = useState(false);
   const [newCardFrontText, setNewCardFrontText] = useState("");
   const [newCardBackText, setNewCardBackText] = useState("");
-  const [targetLang, setTargetLang] = useState("es"); // Default to Spanish
+  const [targetLang, setTargetLang] = useState("en");
 
   const [targetCardToDelete, setTargetCardToDelete] = useState<Card | null>(null);
 
