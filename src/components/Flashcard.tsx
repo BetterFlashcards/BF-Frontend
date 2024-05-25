@@ -22,7 +22,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card, onDelete }) => {
     const front = prompt("New front text:", card.front_text);
     const back = prompt("New back text:", card.back_text);
     if (front && back) {
-      cardService.updateCard(card.id, front, back);
+      cardService.updateCard(card.deck_id, card.id, front, back);
     }
   };
 
