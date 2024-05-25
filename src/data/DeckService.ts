@@ -1,6 +1,4 @@
 import { Deck } from "../types";
-import CardService from "./CardService";
-import { storeData } from "../helpers";
 import AuthService from "./AuthService";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -9,11 +7,9 @@ class DeckService {
   private static instance: DeckService;
   private decks: Array<Deck>;
   private subscribers: Array<ChangeCallback>;
-  private cardService: CardService;
   private authService: AuthService;
   private constructor() {
     this.authService = AuthService.getInstance();
-    this.cardService = CardService.getInstance();
     this.decks = [];
     this.subscribers = [];
   }
@@ -29,12 +25,7 @@ class DeckService {
   }
 
   public getDeckById(id: number): Deck | undefined {
-    console.log('This decks:' + this.decks);
     return this.decks.find((item) => item.id === id);
-  }
-
-  public getCardCountByDeck(deckId: number) {
-    return this.cardService.getCards().length;
   }
 
   public async createDeck(data: {
@@ -44,15 +35,37 @@ class DeckService {
     try {
       const res = await this.authService
         .getAuthenticatedClient()
-        .post<{ id: number }>("/decks", data);
-      const newDeck: Deck = {
-        id: res.data.id,
-        name: data.name,
-        language: data.language,
-      };
-      this.decks.push(newDeck);
+        .post<Deck>("/decks", data);
+
+      this.decks.push(res.data);
       toast.success("Deck created successfully!");
-      return newDeck;
+      return res.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<{ detail: string }>;
+        const msg = axiosError.response?.data.detail;
+        toast.error(msg);
+      } else {
+        toast.error(error as string);
+      }
+      return null;
+    }
+  }
+
+  public async updateDeck(data: Deck): Promise<Deck | null> {
+    try {
+      const res = await this.authService
+        .getAuthenticatedClient()
+        .put<Deck>("/decks/" + data.id, {
+          name: data.name,
+          language: data.language,
+        });
+      let index = this.decks.findIndex((deck) => deck.id === data.id);
+      this.decks[index] = res.data;
+      console.log(this.decks);
+      this.notifySubscribers();
+      toast.success("Deck updated successfully!");
+      return res.data;
     } catch (error) {
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<{ detail: string }>;
@@ -85,6 +98,23 @@ class DeckService {
     return null;
   }
 
+  public async fetchDeckById(id: number): Promise<Deck | null> {
+    try {
+      const res = await this.authService
+        .getAuthenticatedClient()
+        .get<Deck>("/decks/" + id);
+      return res.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<{ detail: string }>;
+        console.error(axiosError);
+      } else {
+        console.error(error as string);
+      }
+    }
+    return null;
+  }
+
   public async deleteDeck(id: number): Promise<void> {
     try {
       await this.authService.getAuthenticatedClient().delete("/decks/" + id);
@@ -103,13 +133,6 @@ class DeckService {
     }
   }
 
-  public updateDeckTitle = (id: number, newTitle: string) => {
-    const foundDeck = this.decks.find((deck) => deck.id === id);
-    if (!foundDeck) return;
-    foundDeck.name = newTitle;
-    this.notifySubscribers();
-  };
-
   public subscribe(callback: ChangeCallback) {
     this.subscribers.push(callback);
   }
@@ -120,7 +143,6 @@ class DeckService {
   }
 
   private notifySubscribers() {
-    storeData("decks", this.decks);
     this.subscribers.forEach((callback) => {
       callback(this.decks);
     });

@@ -1,31 +1,21 @@
 import type { Deck as DeckType } from "../types";
 import { Button, Card as BCard, ButtonGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { DeckService } from "../data";
-
 interface DeckProps {
   deck: DeckType;
+  onEdit: (deck: DeckType) => void;
   onDelete: (deckId: number) => void;
 }
 
-export const Deck: React.FC<DeckProps> = ({ deck, onDelete }) => {
-  const deckService = DeckService.getInstance();
+export const Deck: React.FC<DeckProps> = ({ deck, onEdit, onDelete }) => {
   const navigate = useNavigate();
-
-  const handleUpdateDeckTitle = () => {
-    const newTitle = prompt("New title for this deck:", deck.name);
-    if (newTitle) {
-      deckService.updateDeckTitle(deck.id, newTitle);
-    }
-  };
 
   return (
     <BCard className="deck-component">
       <BCard.Header>
-        <div className="d-flex align-items-center justify-content-between">
-          <span className="card-count">Cards: {deckService.getCardCountByDeck(deck.id)}</span>
+        <div className="d-flex align-items-center justify-content-end w-100">
           <ButtonGroup>
-            <Button variant="primary" size="sm" onClick={handleUpdateDeckTitle}>
+            <Button variant="primary" size="sm" onClick={() => onEdit(deck)}>
               Edit
             </Button>
             <Button
@@ -45,7 +35,9 @@ export const Deck: React.FC<DeckProps> = ({ deck, onDelete }) => {
         <BCard.Title>{deck.name}</BCard.Title>
         <BCard.Text>{deck.language}</BCard.Text>
       </BCard.Body>
-      <BCard.Footer className="text-muted">Last updated:</BCard.Footer>
+      <BCard.Footer className="text-muted">
+        Language Code: {deck.language}
+      </BCard.Footer>
     </BCard>
   );
 };

@@ -1,6 +1,5 @@
 import { AxiosError } from "axios";
 import { toast } from "sonner";
-import { storeData } from "../helpers";
 import { Card } from "../types";
 import AuthService from "./AuthService";
 
@@ -33,11 +32,13 @@ class CardService {
   public async createCard(
     deck_id: number,
     front_text: string,
-    back_text: string
+    back_text: string,
+    draft: boolean = false
   ): Promise<Card | null> {
     const data = {
       front_text,
       back_text,
+      draft,
     };
     try {
       const res = await this.authService
@@ -46,7 +47,6 @@ class CardService {
       const newCard = res.data;
       this.cards.push(newCard);
       this.notifySubscribers();
-      toast.success("Flashcard created successfully!");
       return newCard;
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -80,7 +80,7 @@ class CardService {
     return null;
   }
 
-  public async deleteCard(card_id: number): Promise<void> {
+  public async deleteCard(card_id: number): Promise<boolean> {
     try {
       await this.authService
         .getAuthenticatedClient()
@@ -90,6 +90,7 @@ class CardService {
       this.cards.splice(foundIndex, 1);
       this.notifySubscribers();
       toast.success("Card deleted successfully!");
+      return true;
     } catch (error) {
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<{ detail: string }>;
@@ -98,13 +99,21 @@ class CardService {
       } else {
         toast.error(error as string);
       }
+      return false;
     }
   }
 
-  public async updateCard(deck_id: number, card_id: number, front_text: string, back_text: string): Promise<Card | null> {
+  public async updateCard(
+    deck_id: number,
+    card_id: number,
+    front_text: string,
+    back_text: string,
+    draft: boolean = false
+  ): Promise<Card | null> {
     const data = {
       front_text,
       back_text,
+      draft,
     };
     try {
       const res = await this.authService
@@ -116,7 +125,6 @@ class CardService {
       if (foundIndex !== -1) {
         this.cards[foundIndex] = updatedCard;
         this.notifySubscribers();
-        toast.success("Card updated successfully!");
       }
       return updatedCard;
     } catch (error) {
@@ -131,35 +139,6 @@ class CardService {
     }
   }
 
-  async translateWord(word: string, targetLang: string): Promise<string> {
-    try {
-      const res = await this.authService
-        .getAuthenticatedClient()
-        .get<Array<{ word: string; translation: string }>>(`/translate/${word}`, {
-          params: {
-            target_lang: targetLang,
-          },
-        });
-      if (res.data && res.data.length > 0) {
-        const translation = res.data[0].translation;
-        console.log('Translation:', translation);
-        return translation;
-      } else {
-        throw new Error('Translation field is missing in the response');
-      }
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        const axiosError = error as AxiosError<{ detail: string }>;
-        const msg = axiosError.response?.data.detail;
-        toast.error(msg);
-      } else {
-        toast.error(error as string);
-      }
-      throw new Error('Translation API failed');
-    }
-  }
-  
-
   public subscribe(callback: CardChangeCallback) {
     this.subscribers.push(callback);
   }
@@ -170,7 +149,6 @@ class CardService {
   }
 
   private notifySubscribers() {
-    storeData("cards", this.cards);
     this.subscribers.forEach((callback) => {
       callback(this.cards);
     });
