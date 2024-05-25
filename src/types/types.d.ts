@@ -16,3 +16,16 @@ export interface Deck {
   name: string;
   language: string;
 }
+
+export interface Language {
+  id: number;
+  name: string;
+  name_local: string;
+  isocode: string;
+  sorting: number;
+}
+
+export interface Translation {
+  word: string;
+  translation: string;
+}

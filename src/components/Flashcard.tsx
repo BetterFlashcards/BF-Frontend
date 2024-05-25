@@ -1,16 +1,18 @@
 import React, { MouseEventHandler, useState } from "react";
 import type { Card } from "../types";
-import { CardService } from "../data";
 import { Button, Card as BCard, ButtonGroup } from "react-bootstrap";
-import { toast } from "sonner";
 
 interface FlashcardProps {
   card: Card;
+  onEdit: (card: Card) => void;
   onDelete: (card: Card) => void;
 }
 
-export const Flashcard: React.FC<FlashcardProps> = ({ card, onDelete }) => {
-  const cardService = CardService.getInstance();
+export const Flashcard: React.FC<FlashcardProps> = ({
+  card,
+  onEdit,
+  onDelete,
+}) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleDeleteCard: MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -18,27 +20,10 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card, onDelete }) => {
     onDelete(card);
   };
 
-  const handleUpdateCard: MouseEventHandler<HTMLButtonElement> = async (e) => {
+  const handleEditCard: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
-    const front = prompt("New front text:", card.front_text);
-    const targetLang = prompt("Target language (e.g., 'en' for English):", "en");
-    if (front && targetLang) {
-      try {
-        const initialTranslation = await cardService.translateWord(front, targetLang);
-        const back = prompt("Translation (you can edit this):", initialTranslation);
-        if (back) {
-          await cardService.updateCard(card.deck_id, card.id, front, back);
-          toast.success("Card updated successfully!");
-        } else {
-          toast.error("Translation was cancelled.");
-        }
-      } catch (error) {
-        console.error('Translation failed', error);
-        alert('Failed to translate the word. Please try again.');
-      }
-    }
+    onEdit(card);
   };
-  
 
   const handleClick = () => {
     setIsFlipped(!isFlipped);
@@ -46,7 +31,11 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card, onDelete }) => {
 
   return (
     <BCard
-      className={`flashcard-component ${isFlipped ? "flipped" : ""}`}
+      className={[
+        "flashcard-component",
+        isFlipped ? "flipped" : "",
+        card.draft ? "flashcard-component_draft" : "",
+      ].join(" ")}
       onClick={handleClick}
     >
       <BCard.Body>
@@ -58,7 +47,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card, onDelete }) => {
       <BCard.Footer className="flashcard-controls">
         <div className="d-flex justify-content-end">
           <ButtonGroup>
-            <Button variant="primary" size="sm" onClick={handleUpdateCard}>
+            <Button variant="primary" size="sm" onClick={handleEditCard}>
               Edit
             </Button>
             <Button variant="danger" size="sm" onClick={handleDeleteCard}>

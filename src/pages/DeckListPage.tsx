@@ -6,7 +6,6 @@ import {
   InputGroup,
   FormControl,
   Button,
-  ButtonGroup,
   Modal,
   Form,
 } from "react-bootstrap";
@@ -16,6 +15,7 @@ import { DeckService } from "../data";
 import type { Deck as DeckType } from "../types";
 import { useNavigate } from "react-router-dom";
 import ContentLoader from "react-content-loader";
+import { LanguageSelector } from "../components/LanguageSelector";
 
 const DeckListLoader: React.FC = () => (
   <>
@@ -44,6 +44,8 @@ const DeckListPage: React.FC = () => {
   const [language, setLanguage] = useState<string>("");
   const [validated, setValidated] = useState(false);
 
+  const [editedDeck, setEditedDeck] = useState<DeckType | null>(null);
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [targetDeckToDelete, setTargetDeckToDelete] = useState(0);
 
@@ -56,9 +58,7 @@ const DeckListPage: React.FC = () => {
   useEffect(() => {
     deckService.subscribe(deckCallback);
     deckService.fetchDecks();
-    return () => {
-      deckService.unsubscribe(deckCallback);
-    };
+    return () => deckService.unsubscribe(deckCallback);
   }, []);
 
   useEffect(() => {
@@ -97,10 +97,30 @@ const DeckListPage: React.FC = () => {
     if (newDeck) {
       navigate(`/decks/${newDeck.id}`);
     }
-    setValidated(false);
-    setShow(false);
-    setNewDeckName("");
-    setLanguage("");
+    hideModal();
+  }
+
+  function openEditModal(deck: DeckType) {
+    setEditedDeck(deck);
+    setNewDeckName(deck.name);
+    setLanguage(deck.language);
+    setShow(true);
+  }
+
+  async function handleUpdateDeck(event: any) {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    if (form.checkValidity() === false || !editedDeck) {
+      setValidated(true);
+      return;
+    }
+    await deckService.updateDeck({
+      id: editedDeck.id,
+      name: newDeckName,
+      language: language,
+    });
+    hideModal();
   }
 
   function openDeleteModal(deckId: number) {
@@ -113,19 +133,25 @@ const DeckListPage: React.FC = () => {
     setShowDeleteModal(false);
   }
 
+  function hideModal() {
+    setValidated(false);
+    setShow(false);
+    setEditedDeck(null);
+    setNewDeckName("");
+    setLanguage("");
+  }
+
   return (
     <Container fluid="lg" className="deck-list-page mt-5">
       <Row>
-        <Col xs={8}>
+        <div className="deck-list-page__header">
           <h1>All Decks</h1>
-        </Col>
-        <Col xs={4} className="d-flex justify-content-end flex-wrap">
-          <ButtonGroup>
-            <Button variant="primary" onClick={() => setShow(true)}>
+          <div className="deck-list-page__header__buttons">
+            <Button variant="primary" size="sm" onClick={() => setShow(true)}>
               <FaPlus /> Add New Deck
             </Button>
-          </ButtonGroup>
-        </Col>
+          </div>
+        </div>
       </Row>
       <div className="mt-5">
         <InputGroup className="mb-3">
@@ -144,7 +170,11 @@ const DeckListPage: React.FC = () => {
           ) : deckCount > 0 ? (
             sortedDecks.map((deck) => (
               <Col sm={12} md={6} lg={4} xl={3} key={deck.id}>
-                <Deck deck={deck} onDelete={openDeleteModal} />
+                <Deck
+                  deck={deck}
+                  onEdit={openEditModal}
+                  onDelete={openDeleteModal}
+                />
               </Col>
             ))
           ) : (
@@ -153,10 +183,16 @@ const DeckListPage: React.FC = () => {
         </Row>
       </div>
 
-      <Modal show={show} onHide={() => setShow(false)}>
-        <Form noValidate validated={validated} onSubmit={handleCreateNewDeck}>
+      <Modal show={show} onHide={() => hideModal()}>
+        <Form
+          noValidate
+          validated={validated}
+          onSubmit={editedDeck ? handleUpdateDeck : handleCreateNewDeck}
+        >
           <Modal.Header closeButton>
-            <Modal.Title>Enter new deck details</Modal.Title>
+            <Modal.Title>
+              {editedDeck ? "Update deck details" : "Enter new deck details"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form.Group
@@ -176,26 +212,21 @@ const DeckListPage: React.FC = () => {
                 Please enter title.
               </Form.Control.Feedback>
             </Form.Group>
-            <Form.Group
-              className="mb-3"
-              controlId="deckCreateForm.descriptionControl"
-            >
+            <Form.Group className="mb-3" controlId="deckCreateForm.language">
               <Form.Label>Deck Language</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Language"
-                required
+              <LanguageSelector
                 value={language}
-                onChange={(e) => setLanguage(e.target.value)}
+                required
+                onChange={(lang) => setLanguage(lang)}
               />
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShow(false)}>
+            <Button variant="secondary" onClick={() => hideModal()}>
               Close
             </Button>
             <Button type="submit" variant="primary">
-              Submit
+              {editedDeck ? "Update" : "Submit"}
             </Button>
           </Modal.Footer>
         </Form>
