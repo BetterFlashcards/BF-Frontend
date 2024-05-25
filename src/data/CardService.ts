@@ -131,6 +131,35 @@ class CardService {
     }
   }
 
+  async translateWord(word: string, targetLang: string): Promise<string> {
+    try {
+      const res = await this.authService
+        .getAuthenticatedClient()
+        .get<Array<{ word: string; translation: string }>>(`/translate/${word}`, {
+          params: {
+            target_lang: targetLang,
+          },
+        });
+      if (res.data && res.data.length > 0) {
+        const translation = res.data[0].translation;
+        console.log('Translation:', translation);
+        return translation;
+      } else {
+        throw new Error('Translation field is missing in the response');
+      }
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<{ detail: string }>;
+        const msg = axiosError.response?.data.detail;
+        toast.error(msg);
+      } else {
+        toast.error(error as string);
+      }
+      throw new Error('Translation API failed');
+    }
+  }
+  
+
   public subscribe(callback: CardChangeCallback) {
     this.subscribers.push(callback);
   }

@@ -2,6 +2,7 @@ import React, { MouseEventHandler, useState } from "react";
 import type { Card } from "../types";
 import { CardService } from "../data";
 import { Button, Card as BCard, ButtonGroup } from "react-bootstrap";
+import { toast } from "sonner";
 
 interface FlashcardProps {
   card: Card;
@@ -17,14 +18,27 @@ export const Flashcard: React.FC<FlashcardProps> = ({ card, onDelete }) => {
     onDelete(card);
   };
 
-  const handleUpdateCard: MouseEventHandler<HTMLButtonElement> = (e) => {
+  const handleUpdateCard: MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.stopPropagation();
     const front = prompt("New front text:", card.front_text);
-    const back = prompt("New back text:", card.back_text);
-    if (front && back) {
-      cardService.updateCard(card.deck_id, card.id, front, back);
+    const targetLang = prompt("Target language (e.g., 'en' for English):", "en"); // Default to Spanish
+    if (front && targetLang) {
+      try {
+        const initialTranslation = await cardService.translateWord(front, targetLang);
+        const back = prompt("Translation (you can edit this):", initialTranslation);
+        if (back) {
+          await cardService.updateCard(card.deck_id, card.id, front, back);
+          toast.success("Card updated successfully!");
+        } else {
+          toast.error("Translation was cancelled.");
+        }
+      } catch (error) {
+        console.error('Translation failed', error);
+        alert('Failed to translate the word. Please try again.');
+      }
     }
   };
+  
 
   const handleClick = () => {
     setIsFlipped(!isFlipped);

@@ -10,13 +10,14 @@ import {
   Modal,
   Form,
 } from "react-bootstrap";
-import { CardService } from "../data";
+import { CardService, DeckService } from "../data";
 import { Card } from "../types";
 import { Flashcard } from "../components/Flashcard";
 import { CardChangeCallback } from "../data/CardService";
 import { useParams } from "react-router-dom";
 import { FaPlus, FaSort } from "react-icons/fa";
 import ContentLoader from "react-content-loader";
+import { toast } from "sonner";
 
 const CardListLoader: React.FC = () => (
   <>
@@ -33,9 +34,11 @@ const CardListLoader: React.FC = () => (
 const DeckDetailsPage: React.FC = () => {
   const { id } = useParams();
   const deckId = parseInt(id!);
+  const deckService = DeckService.getInstance();
   const cardService = CardService.getInstance();
   cardService.resetCards();
 
+  const [deckName, setDeckName] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortedCards, setSortedCards] = useState<Array<Card>>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,10 +48,9 @@ const DeckDetailsPage: React.FC = () => {
   const [createModalValidated, setCreateModalValidated] = useState(false);
   const [newCardFrontText, setNewCardFrontText] = useState("");
   const [newCardBackText, setNewCardBackText] = useState("");
+  const [targetLang, setTargetLang] = useState("es"); // Default to Spanish
 
-  const [targetCardToDelete, setTargetCardToDelete] = useState<Card | null>(
-    null
-  );
+  const [targetCardToDelete, setTargetCardToDelete] = useState<Card | null>(null);
 
   const cardChangeCallback: CardChangeCallback = () => {
     setSortedCards([...cardService.getCards()]);
@@ -59,6 +61,14 @@ const DeckDetailsPage: React.FC = () => {
     cardService.fetchCards(deckId);
     return () => cardService.unsubscribe(cardChangeCallback);
   }, []);
+
+  useEffect(() => {
+    const fetchDeckData = async () => {
+      const deck = await deckService.getDeckById(deckId);
+      setDeckName(deck?.name || "Deck");
+    };
+    fetchDeckData();
+  }, [deckId, deckService]);
 
   useEffect(() => {
     let filtered = cardService
@@ -91,11 +101,22 @@ const DeckDetailsPage: React.FC = () => {
       newCardBackText
     );
     if (card) {
+      toast.success("Card created successfully!");
     }
     setCreateModalValidated(false);
     setShowCreateModal(false);
     setNewCardFrontText("");
     setNewCardBackText("");
+  }
+
+  async function handleTranslate() {
+    try {
+      const translation = await cardService.translateWord(newCardFrontText, targetLang);
+      setNewCardBackText(translation);
+    } catch (error) {
+      console.error('Translation failed', error);
+      alert('Failed to translate the word. Please try again.');
+    }
   }
 
   function handleOpenDeleteModal(card: Card) {
@@ -111,7 +132,7 @@ const DeckDetailsPage: React.FC = () => {
     <Container fluid="lg" className="deck-details-page mt-5">
       <Row>
         <Col xs={8}>
-          <h1>{deckId}</h1>
+          <h1>{deckName}</h1>
         </Col>
         <Col xs={4} className="d-flex justify-content-end flex-wrap">
           <Button variant="primary" onClick={() => setShowCreateModal(true)}>
@@ -161,10 +182,7 @@ const DeckDetailsPage: React.FC = () => {
             <Modal.Title>New Flashcard</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form.Group
-              className="mb-3"
-              controlId="deckCreateForm.titleControl"
-            >
+            <Form.Group className="mb-3" controlId="deckCreateForm.titleControl">
               <Form.Label>Word context</Form.Label>
               <Form.Control
                 type="text"
@@ -178,10 +196,19 @@ const DeckDetailsPage: React.FC = () => {
                 Please enter the word.
               </Form.Control.Feedback>
             </Form.Group>
-            <Form.Group
-              className="mb-3"
-              controlId="deckCreateForm.descriptionControl"
-            >
+            <Form.Group className="mb-3">
+              <Form.Label>Target Language (2 characters code. E.g., 'en')</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter target language (e.g., 'es' for Spanish)"
+                value={targetLang}
+                onChange={(e) => setTargetLang(e.target.value)}
+              />
+              <Button variant="secondary" onClick={handleTranslate} className="mt-2">
+                Translate
+              </Button>
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="deckCreateForm.descriptionControl">
               <Form.Label>Translation</Form.Label>
               <Form.Control
                 type="text"
@@ -193,10 +220,7 @@ const DeckDetailsPage: React.FC = () => {
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => setShowCreateModal(false)}
-            >
+            <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
               Close
             </Button>
             <Button type="submit" variant="primary">

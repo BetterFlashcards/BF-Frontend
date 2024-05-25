@@ -29,6 +29,7 @@ class DeckService {
   }
 
   public getDeckById(id: number): Deck | undefined {
+    console.log('This decks:' + this.decks);
     return this.decks.find((item) => item.id === id);
   }
 
