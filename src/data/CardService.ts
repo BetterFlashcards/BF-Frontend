@@ -101,12 +101,33 @@ class CardService {
     }
   }
 
-  public updateCard(id: number, front_text: string, back_text: string) {
-    const foundCard = this.cards.find((card) => card.id == id);
-    if (foundCard) {
-      foundCard.front_text = front_text;
-      foundCard.back_text = back_text;
-      this.notifySubscribers();
+  public async updateCard(deck_id: number, card_id: number, front_text: string, back_text: string): Promise<Card | null> {
+    const data = {
+      front_text,
+      back_text,
+    };
+    try {
+      const res = await this.authService
+        .getAuthenticatedClient()
+        .put<Card>(`/decks/${deck_id}/cards/${card_id}`, data);
+      const updatedCard = res.data;
+
+      const foundIndex = this.cards.findIndex((card) => card.id === card_id);
+      if (foundIndex !== -1) {
+        this.cards[foundIndex] = updatedCard;
+        this.notifySubscribers();
+        toast.success("Card updated successfully!");
+      }
+      return updatedCard;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<{ detail: string }>;
+        const msg = axiosError.response?.data.detail;
+        toast.error(msg);
+      } else {
+        toast.error(error as string);
+      }
+      return null;
     }
   }
 
