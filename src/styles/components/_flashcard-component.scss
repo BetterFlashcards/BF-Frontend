@@ -88,27 +88,4 @@
     }
   }
 }
-
-.swiper {
-  position: absolute;
-
-  &__container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    height: 300px;
-  }
-
-  &__card {
-    &__content {
-      background-color: #03f20b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 200px;
-      width: 200px;
-    }
-  }
-}
+  
