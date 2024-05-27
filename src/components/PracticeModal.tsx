@@ -6,6 +6,7 @@ import PracticeCardService, {
   PracticeCardChangeCallback,
 } from "../data/PracticeCardService";
 import { toast } from "sonner";
+import { FaBan, FaCheck, FaEye, FaEyeSlash } from "react-icons/fa";
 
 interface PracticeModalProps {
   deckId: number;
@@ -59,14 +60,17 @@ export const PracticeModal: React.FC<PracticeModalProps> = ({
     } else if (direction === "right") {
       practiceCardService.setCardState(card_id, true);
     }
+    setIsFlipped(false);
+    setCurrentIndex(index - 1);
+  }
 
+  function handleSessionEnd(index: number) {
     if (index === 0) {
       practiceCardService.resetCards();
       onPracticeFinished();
       onClose();
       toast.success("Practice Finished");
     }
-    setCurrentIndex(index - 1);
   }
 
   return (
@@ -75,21 +79,25 @@ export const PracticeModal: React.FC<PracticeModalProps> = ({
         <Modal.Title>Practice</Modal.Title>
       </Modal.Header>
       {cardsCount > 0 ? (
-        <Modal.Body>
+        <Modal.Body className="practice-modal__body">
           <div className="swiper__container">
             {practiceCards.map((card, index) => (
               <TinderCard
                 ref={childRefs[index]}
                 key={card.id}
                 onSwipe={(direction) => swiped(index, card.id, direction)}
+                onCardLeftScreen={() => handleSessionEnd(index)}
                 className="swiper"
                 preventSwipe={["up", "down"]}
               >
-                <div
-                  className={`swiper__card`}
-                  onClick={() => setIsFlipped(!isFlipped)}
-                >
-                  <div className="swiper__card__content">
+                <div className="swiper__card__container">
+                  <div
+                    className={`swiper__card ${
+                      currentIndex === index && isFlipped
+                        ? "swiper__card_flipped"
+                        : ""
+                    }`}
+                  >
                     <div className="swiper__card__front">{card.front_text}</div>
                     <div className="swiper__card__back">{card.back_text}</div>
                   </div>
@@ -97,17 +105,27 @@ export const PracticeModal: React.FC<PracticeModalProps> = ({
               </TinderCard>
             ))}
           </div>
-
-          <Button variant="danger" onClick={() => swipe("left")}>
-            Do not know
-          </Button>
-          <Button
-            type="submit"
-            variant="success"
-            onClick={() => swipe("right")}
-          >
-            I know
-          </Button>
+          {currentIndex >= 0 ? (
+            <div className="practice-modal__actions">
+              <Button variant="danger" onClick={() => swipe("left")}>
+                <FaBan />
+              </Button>
+              <Button
+                type="submit"
+                variant="success"
+                onClickCapture={() => setIsFlipped(!isFlipped)}
+              >
+                {isFlipped ? <FaEye /> : <FaEyeSlash />}
+              </Button>
+              <Button
+                type="submit"
+                variant="success"
+                onClick={() => swipe("right")}
+              >
+                <FaCheck />
+              </Button>
+            </div>
+          ) : null}
         </Modal.Body>
       ) : (
         <Modal.Body>
