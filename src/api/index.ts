@@ -1,7 +1,7 @@
 import { Axios } from "axios";
 
 const api = new Axios({
-  baseURL: "http://18.234.173.119/api",
+  baseURL: "http://18.215.155.114/api",
   headers: {
     "Content-Type": "application/json",
   },
